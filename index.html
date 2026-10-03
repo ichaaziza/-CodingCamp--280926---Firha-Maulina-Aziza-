@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Track your daily spending with Budget Visualizer" />
+  <title>Budget Visualizer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header class="app-header">
+    <h1 class="app-title">💰 Budget Visualizer</h1>
+    <button class="btn btn--icon" id="clearAllBtn" aria-label="Clear all transactions" title="Clear all data">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ── Balance Summary ── -->
+    <section class="summary-card" aria-label="Balance summary">
+      <div class="summary-item summary-item--balance">
+        <span class="summary-label">Total Balance</span>
+        <span class="summary-amount" id="totalBalance">$0.00</span>
+      </div>
+      <div class="summary-row">
+        <div class="summary-item summary-item--income">
+          <span class="summary-label">Income</span>
+          <span class="summary-amount summary-amount--income" id="totalIncome">+$0.00</span>
+        </div>
+        <div class="summary-divider" aria-hidden="true"></div>
+        <div class="summary-item summary-item--expense">
+          <span class="summary-label">Expenses</span>
+          <span class="summary-amount summary-amount--expense" id="totalExpenses">-$0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Add Transaction Form ── -->
+    <section class="card" aria-labelledby="formTitle">
+      <h2 class="card-title" id="formTitle">Add Transaction</h2>
+
+      <form id="transactionForm" novalidate>
+        <!-- Type toggle -->
+        <div class="type-toggle" role="group" aria-label="Transaction type">
+          <button type="button" class="toggle-btn toggle-btn--active" id="typeExpense" data-type="expense">
+            Expense
+          </button>
+          <button type="button" class="toggle-btn" id="typeIncome" data-type="income">
+            Income
+          </button>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="description">Description</label>
+          <input
+            class="form-input"
+            type="text"
+            id="description"
+            placeholder="e.g. Coffee, Salary…"
+            maxlength="60"
+            required
+            aria-required="true"
+          />
+          <span class="form-error" id="descError" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <label class="form-label" for="amount">Amount ($)</label>
+          <input
+            class="form-input"
+            type="number"
+            id="amount"
+            placeholder="0.00"
+            min="0.01"
+            step="0.01"
+            required
+            aria-required="true"
+          />
+          <span class="form-error" id="amountError" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label" for="category">Category</label>
+          <select class="form-input form-select" id="category" required aria-required="true">
+            <optgroup label="Expenses">
+              <option value="food">🍔 Food &amp; Dining</option>
+              <option value="transport">🚌 Transport</option>
+              <option value="shopping">🛍️ Shopping</option>
+              <option value="bills">💡 Bills &amp; Utilities</option>
+              <option value="health">💊 Health</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="education">📚 Education</option>
+              <option value="other">📦 Other</option>
+            </optgroup>
+            <optgroup label="Income">
+              <option value="salary">💼 Salary</option>
+              <option value="freelance">💻 Freelance</option>
+              <option value="investment">📈 Investment</option>
+              <option value="gift">🎁 Gift</option>
+              <option value="other_income">💵 Other Income</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label" for="txDate">Date</label>
+          <input class="form-input" type="date" id="txDate" required aria-required="true" />
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full" id="submitBtn">
+          Add Expense
+        </button>
+      </form>
+    </section>
+
+    <!-- ── Spending Chart ── -->
+    <section class="card" aria-labelledby="chartTitle" id="chartSection">
+      <div class="card-header">
+        <h2 class="card-title" id="chartTitle">Spending by Category</h2>
+        <div class="chart-legend" id="chartLegend" aria-label="Chart legend"></div>
+      </div>
+      <div class="chart-wrapper" role="img" aria-label="Donut chart of spending by category">
+        <canvas id="spendingChart" width="260" height="260" aria-hidden="true"></canvas>
+        <div class="chart-center" aria-hidden="true">
+          <span class="chart-center-label">Total</span>
+          <span class="chart-center-amount" id="chartTotal">$0</span>
+        </div>
+      </div>
+      <p class="chart-empty" id="chartEmpty">No expense data yet.</p>
+    </section>
+
+    <!-- ── Transaction History ── -->
+    <section class="card" aria-labelledby="historyTitle">
+      <div class="card-header">
+        <h2 class="card-title" id="historyTitle">Transactions</h2>
+        <!-- Filter -->
+        <div class="filter-group">
+          <select class="form-input form-select filter-select" id="filterType" aria-label="Filter by type">
+            <option value="all">All</option>
+            <option value="expense">Expenses</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+      </div>
+
+      <ul class="tx-list" id="txList" aria-label="Transaction history" aria-live="polite">
+        <!-- populated by JS -->
+      </ul>
+      <p class="tx-empty" id="txEmpty">No transactions yet. Add one above!</p>
+    </section>
+
+  </main>
+
+  <!-- ── Confirm Modal ── -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true"
+       aria-labelledby="modalTitle" hidden>
+    <div class="modal">
+      <h3 class="modal-title" id="modalTitle">Confirm</h3>
+      <p class="modal-body" id="modalBody"></p>
+      <div class="modal-actions">
+        <button class="btn btn--ghost" id="modalCancel">Cancel</button>
+        <button class="btn btn--danger" id="modalConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
